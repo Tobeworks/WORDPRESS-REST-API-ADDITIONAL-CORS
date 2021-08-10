@@ -2,6 +2,7 @@
 /**
  * @package REST API CORS
  * @version 1.0.2
+ * Text Domain: wp_restapi_cors
  */
 /*
 Plugin Name: Additional Cors for WP REST API
@@ -26,4 +27,21 @@ add_action( 'rest_api_init', function() {
 	remove_filter( 'rest_pre_serve_request', 'rest_send_cors_headers' );
 	add_filter( 'rest_pre_serve_request', addCors);
 }, 15 );
+
+
+
+function _options_page_sub()
+{
+    add_submenu_page(
+        'options-general.php',
+        'D4-Optionen',
+        'D4-Optionen',
+        'manage_options',
+        'd4-display',
+        'd4_admin_page_html'
+    );
+}
+add_action('admin_menu', 'd4_options_page_sub');
+
+
 ?>
