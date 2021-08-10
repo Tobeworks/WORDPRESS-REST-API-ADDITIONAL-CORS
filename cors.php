@@ -46,6 +46,9 @@ function wp_restapi_cors_Init(){
 
 
 function wp_restapi_cors_addCors() {
+
+  $options = get_option('wp_restapi_cors_options');
+
   $origin_url = '*';
   header( 'Access-Control-Allow-Origin: ' . $origin_url );
   header( 'Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE, HEAD' );
@@ -67,11 +70,15 @@ add_filter('init','wp_restapi_cors_admin_init');
 
 function wp_restapi_cors_save_data(){
       if(isset($_POST['wprac_submit'])){
-        //print_r($_POST);
+
         $res = $_POST;
         unset($res['wprac_submit']);
-        update_site_option('wp_restapi_cors_options',$res);
-        print_r(get_option('wp_restapi_cors_options'));
+        if(isset($_POST['wprac_enabled'])){
+           update_site_option('wp_restapi_cors_options',$res);
+        }else{
+            update_site_option('wp_restapi_cors_options',[]);
+        }  
+        //print_r(get_option('wp_restapi_cors_options'));
         //print_r(update_site_option('wp_restapi_cors_options',$_POST));
       }
 }
@@ -80,7 +87,7 @@ function wp_restapi_cors_admin_assets(){
 
   if(is_admin() == true){
     wp_enqueue_script('wp_restapi_cors_admin_js' , plugin_dir_url(__FILE__) . 'js/wp_restapi_cors_admin.js', array('jquery'), 1.2, true);
-    wp_enqueue_style( 'wp_restapi_cors_admin_js', plugin_dir_url(__FILE__). 'css/styles.css', array(), '1.0', 'all');
+    wp_enqueue_style( 'wp_restapi_cors_admin_css', plugin_dir_url(__FILE__). 'css/styles.css', array(), '1.0', 'all');
   }
 
 }
@@ -100,6 +107,73 @@ function wp_restapi_cors_options_page_sub(){
     );
 }
 add_action('admin_menu', 'wp_restapi_cors_options_page_sub');
+
+
+function wp_restapi_cors_generate(){
+
+  $options = get_option('wp_restapi_cors_options');
+
+  $res_methods_arr= array();
+
+  if(isset($options['wprac_enabled']) && $options['wprac_enabled'] == 1){
+      $wprac_enabled_checked = $checked;
+  }
+
+  $wprac_POST_checked = false;
+  if(isset($options['wprac_POST']) && $options['wprac_POST'] == 1){
+    $res_methods_arr['wprac_POST'] = 'POST';
+  }
+
+  if(isset($options['wprac_GET']) && $options['wprac_GET'] == 1){
+    $res_methods_arr['wprac_GET'] = 'GET';
+  }
+
+  if(isset($options['wprac_OPTIONS']) && $options['wprac_OPTIONS'] == 1){
+    $res_methods_arr['wprac_OPTIONS'] = 'OPTIONS';
+  }
+ 
+  if(isset($options['wprac_PUT']) && $options['wprac_PUT'] == 1){
+    $res_methods_arr['wprac_PUT'] = 'PUT';
+  }
+
+  if(isset($options['wprac_DELETE']) && $options['wprac_DELETE'] == 1){
+    $res_methods_arr['wprac_DELETE'] = 'DELETE';
+  }
+  $credent  = false;
+  if(isset($options['wprac_CREDENTIALS']) && $options['wprac_CREDENTIALS'] == 1){
+      $credent = 'Access-Control-Allow-Credentials: true';
+  }
+
+  $head= false;
+  if(isset($options['wprac_HEAD']) && $options['wprac_HEAD'] == 1){
+    $head ='Access-Control-Expose-Headers: Link';
+    $res_methods_arr['wprac_HEAD'] = 'HEAD';
+  }
+
+
+
+  if(isset($options['wprac_ORIGIN_select']) && $options['wprac_ORIGIN_select'] == 1 ){
+    $wprac_ORIGIN_select = $checked;
+    $wprac_ORIGIN = $options['wprac_ORIGIN'];
+ }
+ //print_r($res_methods); 
+ //var_dump(implode(',',$res_methods_arr));
+  ?>
+    <pre>
+    Access-Control-Allow-Origin: <?= $wprac_ORIGIN ?>
+    Access-Control-Allow-Methods: <?= implode(',',$res_methods_arr) ?> 
+    <?= $head ?>
+    <?= $credent  ?>
+    </pre>
+  <?php
+
+    // header( 'Access-Control-Allow-Origin: ' . $options);
+    // header( 'Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE, HEAD' );
+    // header( 'Access-Control-Expose-Headers: Link' );
+    // header( 'Access-Control-Allow-Credentials: true');
+}
+
+
 
 
 function wp_restapi_cors_admin_page(){
@@ -146,12 +220,15 @@ function wp_restapi_cors_admin_page(){
   if(isset($options['wprac_HEAD']) && $options['wprac_HEAD'] == 1){
       $wprac_HEAD_checked = $checked;
   }
-  $wprac_ORIGIN = false;
+  $wprac_ORIGIN_select = false;
   $wprac_ORIGIN = false;
   if(isset($options['wprac_ORIGIN_select']) && $options['wprac_ORIGIN_select'] == 1 ){
     $wprac_ORIGIN_select = $checked;
     $wprac_ORIGIN = $options['wprac_ORIGIN'];
   }
+
+
+
   ?>
     <h1><?php _e( 'WP REST API - CORS Administration', _WPRAC ); ?></h1>
       <form action="./options-general.php?page=wp-restapi-cors" method="post">
@@ -223,6 +300,9 @@ function wp_restapi_cors_admin_page(){
     </div>
     </form>
   <?php
+  if(isset($_POST['wprac_submit'])){
+    wp_restapi_cors_generate();
+  }
 }
 
 ?>
