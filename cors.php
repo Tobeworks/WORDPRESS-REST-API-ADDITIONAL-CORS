@@ -46,15 +46,6 @@ function wp_restapi_cors_Init(){
 
 
 function wp_restapi_cors_addCors() {
-
-
-  // $options = get_option('wp_restapi_cors_options');
-
-  // $origin_url = '*';
-  // header( 'Access-Control-Allow-Origin: ' . $origin_url );
-  // header( 'Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE, HEAD' );
-  // header( 'Access-Control-Expose-Headers: Link' );
-  // header( 'Access-Control-Allow-Credentials: true');
   wp_restapi_cors_generate('backend');
 }
 add_action( 'rest_api_init', function() {
@@ -80,8 +71,6 @@ function wp_restapi_cors_save_data(){
         }else{
             update_site_option('wp_restapi_cors_options',[]);
         }  
-        //print_r(get_option('wp_restapi_cors_options'));
-        //print_r(update_site_option('wp_restapi_cors_options',$_POST));
       }
 }
 
@@ -153,17 +142,14 @@ function wp_restapi_cors_generate(string $mode = 'frontend'){
     $res_methods_arr['wprac_HEAD'] = 'HEAD';
   }
 
-
-
   if(isset($options['wprac_ORIGIN_select']) && $options['wprac_ORIGIN_select'] == 1 ){
     $wprac_ORIGIN_select  = $checked;
     $wprac_ORIGIN         = $options['wprac_ORIGIN'];
- }else{
-  $wprac_ORIGIN         = 'null';
- }
- //print_r($res_methods); 
- //var_dump(implode(',',$res_methods_arr));
-    if(count($res_methods_arr) > 0 && $mode == 'frontend'){
+  }else{
+    $wprac_ORIGIN         = 'null';
+  }
+
+  if(count($res_methods_arr) > 0 && $mode == 'frontend'){
   ?>
     <pre>
     Access-Control-Allow-Origin: <?= $wprac_ORIGIN."\n" ?>
@@ -184,10 +170,6 @@ function wp_restapi_cors_generate(string $mode = 'frontend'){
     
     
   }
-
-    // 
-    // 
-    // 
 }
 
 
@@ -317,9 +299,7 @@ function wp_restapi_cors_admin_page(){
     </div>
     </form>
   <?php
-  //if(isset($_POST['wprac_submit'])){
     wp_restapi_cors_generate();
-  //}
 }
 
 ?>
